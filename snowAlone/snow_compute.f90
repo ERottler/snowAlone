@@ -1,10 +1,8 @@
+
 subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, windSpeed, cloudCoverage, &
                         snowEnergyCont, snowWaterEquiv, albedo, snowEnergyCont_new, snowWaterEquiv_new, albedo_new, &
                         precip_new, TEMP_MEAN, TEMP_SURF, LIQU_FRAC, flux_M_prec, flux_M_subl, flux_M_flow, flux_R_netS, &
                         flux_R_netL, flux_R_soil, flux_R_sens, stoi_f_prec, stoi_f_subl, stoi_f_flow, rate_G_alb)
-
-!!!precipitation modification still to include!!!
-!flux_melt, flux_subl for water balance from snowModel_derivs() still to be included to output
 
     use snow_params
 
@@ -26,11 +24,11 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
     REAL, INTENT(OUT)     ::      snowWaterEquiv_new      !Snow water equivalent (m)
     REAL, INTENT(OUT)     ::      albedo_new              !Albedo (-)
 
-    REAL, INTENT(OUT)     ::      precip_new              !Precipitation + Snowmelt
+    REAL, INTENT(OUT)     ::      precip_new              !Precipitation modified by snow accumulation and snow melt [mm/referenceInterval]
 
     REAL, DIMENSION(1:5)  ::      ddt_states              !array to collect results of calculations
 
-    REAL, DIMENSION(1:14) ::      debug                   !array to collect optional output (for debugging purposes and in-depth analyses of the behaviour)
+    REAL, DIMENSION(1:14) ::      debug                   !array to collect output for debugging purposes and in-depth analyses of the behaviour
 
     REAL, INTENT(OUT)     ::      TEMP_MEAN
     REAL, INTENT(OUT)     ::      TEMP_SURF
@@ -63,7 +61,8 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
                                   snowEnergyCont, snowWaterEquiv, albedo)
 
     !Correct if SWE would become < 0
-    if(ddt_states(2) < 0 .and. ABS(ddt_states(2))*86400 > snowWaterEquiv)   then
+    !M_flow states what possible to melt, not what actually melting; M_FLow > SWE possible
+    if(ddt_states(2) < 0 .and. ABS(ddt_states(2))*precipSeconds > snowWaterEquiv)   then
 
        snowWaterEquiv_new = 0.
        snowEnergyCont_new = 0.
@@ -77,11 +76,18 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
 
     end if
 
-      !Calculation modified precipitation signal
-      precip_new      =     (snowWaterEquiv_new - snowWaterEquiv)*(-1)
-      if(precip_new < 0) then
-      precip_new = 0
-      end if
+
+
+    if(ddt_states(4)*precipSeconds > snowWaterEquiv) then
+
+       precip_new = snowWaterEquiv + precipSumMM ! mm/referenceInterval
+
+    else
+
+       precip_new = ddt_states(4)*1000*precipSeconds ! mm/referenceInterval
+
+    end if
+
 
       TEMP_MEAN       =     debug(1)
       TEMP_SURF       =     debug(2)
@@ -385,6 +391,7 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
           !922 = Density of ice (kg/m3)
           !Fix negative values of the relative saturation (-)
           M_flow = kSatSnow * max(0., rss)**3.
+
        else
           M_flow = 0.
        endif

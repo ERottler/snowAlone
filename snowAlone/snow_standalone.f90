@@ -16,8 +16,6 @@ program snow_standalone
     REAL, ALLOCATABLE      ::     snowWaterEquiv(:)         !Snow water equivalent (m)
     REAL, ALLOCATABLE      ::     albedo(:)                 !Albedo (-)
 
-    REAL, ALLOCATABLE      ::     precipSnow(:)       !Precipitation + Snowmelt
-
     REAL                   ::     snowEnergyCont_new      !Dummy to collect new snow energy content (kJ/m2) for next time step
     REAL                   ::     snowWaterEquiv_new      !Dummy to collect new snow water equivalent (m) for next time step
     REAL                   ::     albedo_new              !Dummy to collect new albedo (-) for next time step
@@ -56,7 +54,7 @@ program snow_standalone
     REAL                   ::     rate_G_alb
 
     INTEGER                ::     Nrow=7671               !Number of rows to read from input data
-    INTEGER                ::     i                   !counter for do loop
+    INTEGER                ::     i                       !counter for do loop
 
     ALLOCATE(precip(Nrow))
     ALLOCATE(temp(Nrow))
@@ -69,7 +67,6 @@ program snow_standalone
     ALLOCATE(snowEnergyCont(Nrow))
     ALLOCATE(snowWaterEquiv(Nrow))
     ALLOCATE(albedo(Nrow))
-    ALLOCATE(precipSnow(Nrow))
 
     ALLOCATE(snowTemp(Nrow))
     ALLOCATE(surfTemp(Nrow))
@@ -92,9 +89,8 @@ program snow_standalone
     albedo(1)             =     albedoMax
 
 
-
     !Read meteorological input
-    OPEN(11, file='U:\snowStandAlone\input\input_snow.dat', status= 'old')
+    OPEN(11, file='U:\GitHub\SnowAlone\input\input_syn.dat', status= 'old')
 
     DO i = 1, Nrow
        READ(11,*) temp(i), precip(i), radia(i), relhumi(i), airpress(i), windspeed(i), cloudcover(i)
@@ -114,7 +110,7 @@ program snow_standalone
        snowWaterEquiv(i+1)      =      snowWaterEquiv_new
        albedo(i+1)              =      albedo_new
 
-       precipSnow(i)            =      precip_new
+       precip(i)                =      precip_new !Precipitation modified by snow accumulation and snow melt
 
        snowTemp(i) = TEMP_MEAN
        surfTemp(i) = TEMP_SURF
@@ -134,15 +130,15 @@ program snow_standalone
     END DO
 
     !Export modified Precipitation
-    OPEN(10,file='U:\snowStandAlone\output\precipSnow.out', status='replace')
-    WRITE(10,*) 'precipSnow'
+    OPEN(10,file='U:\GitHub\SnowAlone\output\precip.out', status='replace')
+    WRITE(10,*) 'precip'
     DO i= 1, Nrow
-    WRITE(10,fmt=100) precipSnow(i)
+    WRITE(10,fmt=100) precip(i)
     END DO
     CLOSE(10)
 
     !Export snow energy content
-    OPEN(11,file='U:\snowStandAlone\output\sec.out', status='replace')
+    OPEN(11,file='U:\GitHub\SnowAlone\output\sec.out', status='replace')
     WRITE(11,*) 'sec'
     DO i= 1, Nrow
     WRITE(11,fmt=100) snowEnergyCont(i)
@@ -151,7 +147,7 @@ program snow_standalone
     CLOSE(11)
 
     !Export snow water equivalent
-    OPEN(12,file='U:\snowStandAlone\output\swe.out', status='replace')
+    OPEN(12,file='U:\GitHub\SnowAlone\output\swe.out', status='replace')
     WRITE(12,*) 'swe'
     DO i= 1, Nrow
     WRITE(12,fmt=100) snowWaterEquiv(i)
@@ -159,7 +155,7 @@ program snow_standalone
     CLOSE(12)
 
     !Export albedo
-    OPEN(13,file='U:\snowStandAlone\output\albedo.out', status='replace')
+    OPEN(13,file='U:\GitHub\SnowAlone\output\albedo.out', status='replace')
     WRITE(13,*) 'albedo'
     DO i= 1, Nrow
     WRITE(13,fmt=100) albedo(i)
@@ -167,7 +163,7 @@ program snow_standalone
     CLOSE(13)
 
     !Export snow temperature
-    OPEN(14,file='U:\snowStandAlone\output\snowTemp.out', status='replace')
+    OPEN(14,file='U:\GitHub\SnowAlone\output\snowTemp.out', status='replace')
     WRITE(14,*) 'snowTemp'
     DO i= 1, Nrow
     WRITE(14,fmt=100) snowTemp(i)
@@ -175,7 +171,7 @@ program snow_standalone
     CLOSE(14)
 
     !Export snow surface temperature
-    OPEN(15,file='U:\snowStandAlone\output\surfTemp.out', status='replace')
+    OPEN(15,file='U:\GitHub\SnowAlone\output\surfTemp.out', status='replace')
     WRITE(15,*) 'surfTemp'
     DO i= 1, Nrow
     WRITE(15,fmt=100) surfTemp(i)
@@ -183,7 +179,7 @@ program snow_standalone
     CLOSE(15)
 
     !Export liquid fraction
-    OPEN(16,file='U:\snowStandAlone\output\liquFrac.out', status='replace')
+    OPEN(16,file='U:\GitHub\SnowAlone\output\liquFrac.out', status='replace')
     WRITE(16,*) 'liquFrac'
     DO i= 1, Nrow
     WRITE(16,fmt=100) liquFrac(i)
@@ -191,7 +187,7 @@ program snow_standalone
     CLOSE(16)
 
     !Export flux precipitation
-    OPEN(17,file='U:\snowStandAlone\output\fluxPrec.out', status='replace')
+    OPEN(17,file='U:\GitHub\SnowAlone\output\fluxPrec.out', status='replace')
     WRITE(17,*) 'fluxPrec'
     DO i= 1, Nrow
     WRITE(17,fmt=100) fluxPrec(i)
@@ -199,7 +195,7 @@ program snow_standalone
     CLOSE(17)
 
     !Export flux precipitation
-    OPEN(18,file='U:\snowStandAlone\output\fluxSubl.out', status='replace')
+    OPEN(18,file='U:\GitHub\SnowAlone\output\fluxSubl.out', status='replace')
     WRITE(18,*) 'fluxSubl'
     DO i= 1, Nrow
     WRITE(18,fmt=100) fluxSubl(i)
@@ -207,7 +203,7 @@ program snow_standalone
     CLOSE(18)
 
     !Export flux melt
-    OPEN(19,file='U:\snowStandAlone\output\fluxFlow.out', status='replace')
+    OPEN(19,file='U:\GitHub\SnowAlone\output\fluxFlow.out', status='replace')
     WRITE(19,*) 'fluxFlow'
     DO i= 1, Nrow
     WRITE(19,fmt=100) fluxFlow(i)
@@ -215,7 +211,7 @@ program snow_standalone
     CLOSE(19)
 
     !Export flux net shortwave radiation
-    OPEN(20,file='U:\snowStandAlone\output\fluxNetS.out', status='replace')
+    OPEN(20,file='U:\GitHub\SnowAlone\output\fluxNetS.out', status='replace')
     WRITE(20,*) 'fluxNetS'
     DO i= 1, Nrow
     WRITE(20,fmt=100) fluxNetS(i)
@@ -223,7 +219,7 @@ program snow_standalone
     CLOSE(20)
 
     !Export flux net longwave radiation
-    OPEN(21,file='U:\snowStandAlone\output\fluxNetL.out', status='replace')
+    OPEN(21,file='U:\GitHub\SnowAlone\output\fluxNetL.out', status='replace')
     WRITE(21,*) 'fluxNetL'
     DO i= 1, Nrow
     WRITE(21,fmt=100) fluxNetL(i)
@@ -231,7 +227,7 @@ program snow_standalone
     CLOSE(21)
 
     !Export soil flux
-    OPEN(22,file='U:\snowStandAlone\output\fluxSoil.out', status='replace')
+    OPEN(22,file='U:\GitHub\SnowAlone\output\fluxSoil.out', status='replace')
     WRITE(22,*) 'fluxSoil'
     DO i= 1, Nrow
     WRITE(22,fmt=100) fluxSoil(i)
@@ -239,7 +235,7 @@ program snow_standalone
     CLOSE(22)
 
     !Export sensible heat flux
-    OPEN(23,file='U:\snowStandAlone\output\fluxSens.out', status='replace')
+    OPEN(23,file='U:\GitHub\SnowAlone\output\fluxSens.out', status='replace')
     WRITE(23,*) 'fluxSens'
     DO i= 1, Nrow
     WRITE(23,fmt=100) fluxSens(i)
@@ -247,7 +243,7 @@ program snow_standalone
     CLOSE(23)
 
     !Export transformation factor precipitation
-    OPEN(24,file='U:\snowStandAlone\output\stoiPrec.out', status='replace')
+    OPEN(24,file='U:\GitHub\SnowAlone\output\stoiPrec.out', status='replace')
     WRITE(24,*) 'stoiPrec'
     DO i= 1, Nrow
     WRITE(24,fmt=100) stoiPrec(i)
@@ -255,7 +251,7 @@ program snow_standalone
     CLOSE(24)
 
     !Export transformation factor sublimation
-    OPEN(25,file='U:\snowStandAlone\output\stoiSubl.out', status='replace')
+    OPEN(25,file='U:\GitHub\SnowAlone\output\stoiSubl.out', status='replace')
     WRITE(25,*) 'stoiSubl'
     DO i= 1, Nrow
     WRITE(25,fmt=100) stoiSubl(i)
@@ -263,7 +259,7 @@ program snow_standalone
     CLOSE(25)
 
     !Export transformation factor snow melt
-    OPEN(26,file='U:\snowStandAlone\output\stoiFlow.out', status='replace')
+    OPEN(26,file='U:\GitHub\SnowAlone\output\stoiFlow.out', status='replace')
     WRITE(26,*) 'stoiFlow'
     DO i= 1, Nrow
     WRITE(26,fmt=100) stoiFlow(i)
@@ -271,14 +267,12 @@ program snow_standalone
     CLOSE(26)
 
     !Export albedo change
-    OPEN(27,file='U:\snowStandAlone\output\rateAlbe.out', status='replace')
+    OPEN(27,file='U:\GitHub\SnowAlone\output\rateAlbe.out', status='replace')
     WRITE(27,*) 'rateAlbe'
     DO i= 1, Nrow
     WRITE(27,fmt=100) rateAlbe(i)
     END DO
     CLOSE(27)
-
-
 
     PRINT*, 'Run successfully. Check output.'
 
