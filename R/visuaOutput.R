@@ -5,7 +5,7 @@
 ###
 
 
-setwd("U:/snowAlone/output")
+setwd("U:/GitHub/snowAlone/output")
 
 nRows <- 499
 precip <- read.table("precip.out", nrows = nRows, header = T)
