@@ -4,54 +4,32 @@ program snow_standalone
 
     implicit none
 
-    REAL, ALLOCATABLE      ::     precip(:)           !Precipitation sum (mm/referenceInterval)
-    REAL, ALLOCATABLE      ::     temp(:)             !Air temperature (°C)
-    REAL, ALLOCATABLE      ::     radia(:)               !Incoming short wave radiation (W/m2)
+    REAL, ALLOCATABLE      ::     precip(:)               !Precipitation sum (mm/referenceInterval)
+    REAL, ALLOCATABLE      ::     temp(:)                 !Air temperature (°C)
+    REAL, ALLOCATABLE      ::     radia(:)                !Incoming short wave radiation (W/m2)
     REAL, ALLOCATABLE      ::     airpress(:)             !Air pressure (hPa)
-    REAL, ALLOCATABLE      ::     relhumi(:)             !Relative humidity (%)
-    REAL, ALLOCATABLE      ::     windspeed(:)               !Wind speed (m/s)
+    REAL, ALLOCATABLE      ::     relhumi(:)              !Relative humidity (%)
+    REAL, ALLOCATABLE      ::     windspeed(:)            !Wind speed (m/s)
     REAL, ALLOCATABLE      ::     cloudcover(:)           !Cloud cover (0 = clear sky, 1 = fully covered)
 
-    REAL, ALLOCATABLE      ::     snowEnergyCont(:)         !Snow energy content (kJ/m2)
-    REAL, ALLOCATABLE      ::     snowWaterEquiv(:)         !Snow water equivalent (m)
-    REAL, ALLOCATABLE      ::     albedo(:)                 !Albedo (-)
+    REAL, ALLOCATABLE      ::     snowEnergyCont(:)       !Snow energy content (kJ/m2)
+    REAL, ALLOCATABLE      ::     snowWaterEquiv(:)       !Snow water equivalent (m)
+    REAL, ALLOCATABLE      ::     albedo(:)               !Albedo (-)
 
-    REAL                   ::     snowEnergyCont_new      !Dummy to collect new snow energy content (kJ/m2) for next time step
-    REAL                   ::     snowWaterEquiv_new      !Dummy to collect new snow water equivalent (m) for next time step
-    REAL                   ::     albedo_new              !Dummy to collect new albedo (-) for next time step
-    REAL                   ::     precip_new
-
-    !Debug
-    REAL, ALLOCATABLE      ::     snowTemp(:)
-    REAL, ALLOCATABLE      ::     surfTemp(:)
-    REAL, ALLOCATABLE      ::     liquFrac(:)
-    REAL, ALLOCATABLE      ::     fluxPrec(:)
-    REAL, ALLOCATABLE      ::     fluxSubl(:)
-    REAL, ALLOCATABLE      ::     fluxFlow(:)
-    REAL, ALLOCATABLE      ::     fluxNetS(:)
-    REAL, ALLOCATABLE      ::     fluxNetL(:)
-    REAL, ALLOCATABLE      ::     fluxSoil(:)
-    REAL, ALLOCATABLE      ::     fluxSens(:)
-    REAL, ALLOCATABLE      ::     stoiPrec(:)
-    REAL, ALLOCATABLE      ::     stoiSubl(:)
-    REAL, ALLOCATABLE      ::     stoiFlow(:)
-    REAL, ALLOCATABLE      ::     rateAlbe(:)
-
-
-    REAL                   ::     TEMP_MEAN               !Dummy to collect mean snow temp for next time step
-    REAL                   ::     TEMP_SURF
-    REAL                   ::     LIQU_FRAC
-    REAL                   ::     flux_M_prec
-    REAL                   ::     flux_M_subl
-    REAL                   ::     flux_M_flow
-    REAL                   ::     flux_R_netS
-    REAL                   ::     flux_R_netL
-    REAL                   ::     flux_R_soil
-    REAL                   ::     flux_R_sens
-    REAL                   ::     stoi_f_prec
-    REAL                   ::     stoi_f_subl
-    REAL                   ::     stoi_f_flow
-    REAL                   ::     rate_G_alb
+    REAL, ALLOCATABLE      ::     snowTemp(:)             !Mean temperatur of the snow pack [°C]
+    REAL, ALLOCATABLE      ::     surfTemp(:)             !Snow surface temperature [°C]
+    REAL, ALLOCATABLE      ::     liquFrac(:)             !Fraction of liquid water (mass water / (mass water + mass ice)); Unit: Dimensionless, range 0...1
+    REAL, ALLOCATABLE      ::     fluxPrec(:)             !Precipitation mass flux [m/s]
+    REAL, ALLOCATABLE      ::     fluxSubl(:)             !Sublimation mass flux [m/s]
+    REAL, ALLOCATABLE      ::     fluxFlow(:)             !Meltwater flux [m/s]
+    REAL, ALLOCATABLE      ::     fluxNetS(:)             !Short-wave radiation balance [W/m²]
+    REAL, ALLOCATABLE      ::     fluxNetL(:)             !Long-wave radiation balance [W/m²]
+    REAL, ALLOCATABLE      ::     fluxSoil(:)             !Soil heat flux [W/m²]
+    REAL, ALLOCATABLE      ::     fluxSens(:)             !Sensible heat flux [W/m²]
+    REAL, ALLOCATABLE      ::     stoiPrec(:)             !Conversion of precipitaion mass flux (m/s) to energy flux (kJ/m2/s); Unit of result: kJ/m3
+    REAL, ALLOCATABLE      ::     stoiSubl(:)             !Conversion of sublimation mass flux (m/s) to energy flux (kJ/kg/K); Unit of result: kJ/m3
+    REAL, ALLOCATABLE      ::     stoiFlow(:)             !Conversion of meltwater loss mass flux (m/s) to energy flux (kJ/m2/s); Unit of result: kJ/m3
+    REAL, ALLOCATABLE      ::     rateAlbe(:)             !Change rate of albedo [1/s]
 
     INTEGER                ::     Nrow=7671               !Number of rows to read from input data
     INTEGER                ::     i                       !counter for do loop
@@ -102,32 +80,13 @@ program snow_standalone
     !Computations
     DO i=1,Nrow-1
        CALL snow_compute(precip(i), temp(i), radia(i), airpress(i), relhumi(i), windspeed(i), cloudcover(i), &
-                         snowEnergyCont(i), snowWaterEquiv(i), albedo(i), snowEnergyCont_new, snowWaterEquiv_new, albedo_new, &
-                         precip_new, TEMP_MEAN, TEMP_SURF, LIQU_FRAC, flux_M_prec, flux_M_subl, flux_M_flow, flux_R_netS, &
-                         flux_R_netL, flux_R_soil, flux_R_sens, stoi_f_prec, stoi_f_subl, stoi_f_flow, rate_G_alb)
-
-       snowEnergyCont(i+1)      =      snowEnergyCont_new
-       snowWaterEquiv(i+1)      =      snowWaterEquiv_new
-       albedo(i+1)              =      albedo_new
-
-       precip(i)                =      precip_new !Precipitation modified by snow accumulation and snow melt
-
-       snowTemp(i) = TEMP_MEAN
-       surfTemp(i) = TEMP_SURF
-       liquFrac(i) = LIQU_FRAC
-       fluxPrec(i) = flux_M_prec
-       fluxSubl(i) = flux_M_subl
-       fluxFlow(i) = flux_M_flow
-       fluxNetS(i) = flux_R_netS
-       fluxNetL(i) = flux_R_netL
-       fluxSoil(i) = flux_R_soil
-       fluxSens(i) = flux_R_sens
-       stoiPrec(i) = stoi_f_prec
-       stoiSubl(i) = stoi_f_subl
-       stoiFlow(i) = stoi_f_flow
-       rateAlbe(i) = rate_G_alb
+                         snowEnergyCont(i), snowWaterEquiv(i), albedo(i), snowEnergyCont(i+1), snowWaterEquiv(i+1), albedo(i+1), &
+                         precip(i), snowTemp(i), surfTemp(i), liquFrac(i), fluxPrec(i), fluxSubl(i), fluxFlow(i), fluxNetS(i), &
+                         fluxNetL(i), fluxSoil(i), fluxSens(i), stoiPrec(i), stoiSubl(i), stoiFlow(i), rateAlbe(i))
 
     END DO
+
+    !print*, 'Is allocated?', allocated(precip)
 
     !Export modified Precipitation
     OPEN(10,file='U:\GitHub\SnowAlone\output\precip.out', status='replace')
