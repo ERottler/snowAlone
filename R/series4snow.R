@@ -7,7 +7,7 @@
 setwd("U:/GitHub/SnowAlone/")
 
 
-###Creat data####
+### Creat data ####
 
 #Creat date vector
 start.date <- strptime("2000/01/01","%Y/%m/%d")  
@@ -45,13 +45,15 @@ cloud=rep(0,length(datevec))
 pressAir = rep(1000, length(datevec))
 
 
-#Export table
+### Export table ####
 
 fname="input_snow"
 output = cbind(temp, rain, radi, humi, pressAir, wind, cloud)
 write.table(file = paste0(getwd(),"/input/input_syn.dat"), x=output, na = "-9999", sep="\t", col.names=FALSE, row.names = FALSE, quote = FALSE)
 
-#Visualize input
+
+### Visualize input ####
+
 input = read.table(paste0(getwd(),"/input/input_syn.dat"))
 input <- input[1:499,]
 colnames(input) <- c("temp", "rain", "radi", "humi", "press", "wind", "cloud")
