@@ -81,14 +81,34 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
 
     if(snowWaterEquiv_new > 0. .or. tempAir < tempAir_crit) then !if snow cover/fall
 
-       !if(ddt_states(4)*precipSeconds > snowWaterEquiv_new) then !case rain on snow and all snow melting
+       if(tempAir > tempAir_crit) then !case rain on snow; to include energy input due to rainfall re-run sec-new
+
+       ddt_states(1:5) = snowModel_derivs(precipSumMM, shortRad, tempAir, pressAir, relHumid, windSpeed, cloudCoverage, &
+                                          precipSeconds, a0, a1, kSatSnow, densDrySnow, SpecCapRet, emissivitySnowMin, &
+                                          emissivitySnowMax, tempAir_crit, albedoMin, albedoMax, agingRate_tAirPos, &
+                                          agingRate_tAirNeg, soilDepth, soilDens, soilSpecHeat, weightAirTemp, &
+                                          snowEnergyCont_new, snowWaterEquiv, albedo)
+
+       snowEnergyCont_new     =     snowEnergyCont   +   ddt_states(1) * precipSeconds
+       snowWaterEquiv_new     =     snowWaterEquiv   +   ddt_states(2) * precipSeconds
+       albedo_new             =     albedo           +   ddt_states(3) * precipSeconds
+
+          !Correct if SWE would become < 0
+          if(ddt_states(2) < 0 .and. ABS(ddt_states(2))*precipSeconds > snowWaterEquiv)   then
+             snowWaterEquiv_new = 0.
+             snowEnergyCont_new = 0.
+             albedo_new         = albedoMax
+          end if
+
+       end if
+
        !precipSumMM = precipSumMM + snowWaterEquiv*1000      ! mm/referenceInterval
        !print*, 'In rain on snow',snowWaterEquiv, precipSumMM
        !end if
 
        !if(ddt_states(4)*precipSeconds < snowWaterEquiv_new) then
-       precipSumMM = ddt_states(4) * 1000 * precipSeconds ! mm/referenceInterval
-       print*, 'In normal snow melt'
+       precipSumMM = min((ddt_states(4) * 1000 * precipSeconds), (snowWaterEquiv*1000+precipSumMM)) ! mm/referenceInterval
+       !print*, 'In normal snow melt'
        !end if
 
     end if
