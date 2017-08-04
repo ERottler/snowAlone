@@ -78,11 +78,20 @@ program snow_standalone
 
 
     !Computations
-    DO i=1,Nrow-1
+    DO i=1,500-1
+
+    print*, i
+
+    if(precip(i) > 0.) then
+    print*, 'Rain'
+    end if
+
        CALL snow_compute(precip(i), temp(i), radia(i), airpress(i), relhumi(i), windspeed(i), cloudcover(i), &
-                         snowEnergyCont(i), snowWaterEquiv(i), albedo(i), snowEnergyCont(i+1), snowWaterEquiv(i+1), albedo(i+1), &
-                         precip(i), snowTemp(i), surfTemp(i), liquFrac(i), fluxPrec(i), fluxSubl(i), fluxFlow(i), fluxNetS(i), &
-                         fluxNetL(i), fluxSoil(i), fluxSens(i), stoiPrec(i), stoiSubl(i), stoiFlow(i), rateAlbe(i))
+                         snowEnergyCont(max(1,i-1)), snowWaterEquiv(max(1,i-1)), albedo(max(1,i-1)),&
+                         snowEnergyCont(i), snowWaterEquiv(i), albedo(i), snowTemp(max(1,i-1)), &
+                         surfTemp(i), liquFrac(i), fluxPrec(i), fluxSubl(i), fluxFlow(i), &
+                         fluxNetS(i), fluxNetL(i), fluxSoil(i), fluxSens(i), stoiPrec(i), &
+                         stoiSubl(i), stoiFlow(i), rateAlbe(i))
 
     END DO
 

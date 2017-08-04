@@ -1,7 +1,7 @@
 
 subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, windSpeed, cloudCoverage, &
                         snowEnergyCont, snowWaterEquiv, albedo, snowEnergyCont_new, snowWaterEquiv_new, albedo_new, &
-                        precip_new, TEMP_MEAN, TEMP_SURF, LIQU_FRAC, flux_M_prec, flux_M_subl, flux_M_flow, flux_R_netS, &
+                        TEMP_MEAN, TEMP_SURF, LIQU_FRAC, flux_M_prec, flux_M_subl, flux_M_flow, flux_R_netS, &
                         flux_R_netL, flux_R_soil, flux_R_sens, stoi_f_prec, stoi_f_subl, stoi_f_flow, rate_G_alb)
 
     use snow_params
@@ -24,7 +24,7 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
     REAL, INTENT(OUT)     ::      snowWaterEquiv_new      !Snow water equivalent (m)
     REAL, INTENT(OUT)     ::      albedo_new              !Albedo (-)
 
-    REAL, INTENT(OUT)     ::      precip_new              !Precipitation modified by snow accumulation and snow melt [mm/referenceInterval]
+    !REAL, INTENT(OUT)     ::      precip_new              !Precipitation modified by snow accumulation and snow melt [mm/referenceInterval]
 
     REAL, DIMENSION(1:5)  ::      ddt_states              !array to collect results of calculations
 
@@ -60,33 +60,39 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
                                   agingRate_tAirNeg, soilDepth, soilDens, soilSpecHeat, weightAirTemp, &
                                   snowEnergyCont, snowWaterEquiv, albedo)
 
-    !Correct if SWE would become < 0
-    !M_flow states what possible to melt, not what actually melting; M_FLow > SWE possible
-    if(ddt_states(2) < 0 .and. ABS(ddt_states(2))*precipSeconds > snowWaterEquiv)   then
-
-       snowWaterEquiv_new = 0.
-       snowEnergyCont_new = 0.
-       albedo_new         = albedoMax
-
-    else
 
        snowEnergyCont_new     =     snowEnergyCont   +   ddt_states(1) * precipSeconds
        snowWaterEquiv_new     =     snowWaterEquiv   +   ddt_states(2) * precipSeconds
        albedo_new             =     albedo           +   ddt_states(3) * precipSeconds
 
+
+
+    !Correct if SWE would become < 0
+    if(ddt_states(2) < 0 .and. ABS(ddt_states(2))*precipSeconds > snowWaterEquiv)   then
+       snowWaterEquiv_new = 0.
+       snowEnergyCont_new = 0.
+       albedo_new         = albedoMax
     end if
 
+    !Calculation modified precipitation
+    !if(snowWaterEquiv < 0.0001 .and. tempAir > tempAir_crit) then !if snow cover/fall
+    !precip_new = precipSumMM
+    !end if
 
+    if(snowWaterEquiv_new > 0. .or. tempAir < tempAir_crit) then !if snow cover/fall
 
-    if(ddt_states(4)*precipSeconds > snowWaterEquiv) then
+       !if(ddt_states(4)*precipSeconds > snowWaterEquiv_new) then !case rain on snow and all snow melting
+       !precipSumMM = precipSumMM + snowWaterEquiv*1000      ! mm/referenceInterval
+       !print*, 'In rain on snow',snowWaterEquiv, precipSumMM
+       !end if
 
-       precip_new = snowWaterEquiv + precipSumMM     ! mm/referenceInterval
-
-    else
-
-       precip_new = ddt_states(4)*1000*precipSeconds ! mm/referenceInterval
+       !if(ddt_states(4)*precipSeconds < snowWaterEquiv_new) then
+       precipSumMM = ddt_states(4) * 1000 * precipSeconds ! mm/referenceInterval
+       print*, 'In normal snow melt'
+       !end if
 
     end if
+
 
       TEMP_MEAN       =     debug(1)
       TEMP_SURF       =     debug(2)
@@ -601,6 +607,11 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
 
         !Rate expressions used multiple times
         M_P = M_prec(precipSumMM, precipSeconds)
+
+        if(snowWaterEquiv < 0.0001 .and. tempAir > tempAir_crit) then !if no snow cover present and precipitation liquid, no addition to swe
+        M_P = 0.
+        end if
+
         M_S = M_subl(TEMP_SURF, tempAir, pressAir, relHumid, windSpeed, a0, a1, snowWaterEquiv)
         M_F = M_flow(LIQU_FRAC, kSatSnow, densDrySnow, specCapRet, snowWaterEquiv)
 

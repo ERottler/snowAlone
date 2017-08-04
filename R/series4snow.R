@@ -21,7 +21,9 @@ rain=rain[1:length(datevec)]
 
 #Temperature [°C]
 #temp=round(rep(c(seq(20,-10,length.out=50),seq(-10,20,length.out=50)),ceiling(length(datevec)/100)),digits=1) # in °C
-temp=round(rep(c(seq(-10,4,length.out=50),seq(3,-10,length.out=50)),ceiling(length(datevec)/100)),digits=1) # in °C
+#temp=round(rep(c(seq(-10,10,length.out=50),seq(10,-10,length.out=50)),ceiling(length(datevec)/100)),digits=1) # in °C
+temp=c(rep(-10, 190), rep(2,length(datevec)))
+#temp=rep(0,length(datevec))
 temp=temp[1:length(datevec)]
 
 #Raidation [W/m2]
@@ -34,7 +36,7 @@ humi=rep(70,length(datevec))
 wind=rep(1,length(datevec))
 
 #Could Coverage [-] (0-1)
-cloud=rep(0,length(datevec))
+cloud=rep(0.5,length(datevec))
 #cloud=rep(NA, length(datevec)) # (-) 0 - 1
 #for(i in 1:length(datevec)){
 #if(rain[i] > 1){cloud[i] <- 1}  #if rain, then clouds (cloud=1)
