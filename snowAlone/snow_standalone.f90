@@ -86,6 +86,10 @@ program snow_standalone
     print*, 'Rain'
     end if
 
+    if(temp(i) > 5.) then
+    print*, 'Temp > 5'
+    end if
+
        CALL snow_compute(precip(i), temp(i), radia(i), airpress(i), relhumi(i), windspeed(i), cloudcover(i), &
                          snowEnergyCont(max(1,i-1)), snowWaterEquiv(max(1,i-1)), albedo(max(1,i-1)),&
                          snowEnergyCont(i), snowWaterEquiv(i), albedo(i), snowTemp(max(1,i-1)), &
