@@ -8,24 +8,25 @@
 setwd("U:/GitHub/snowAlone/output")
 
 nRows <- 499
-precip <- read.table("precip.out", nrows = nRows, header = T)
-sec        <- read.table("sec.out", nrows = nRows, header = T)
-swe        <- read.table("swe.out", nrows = nRows, header = T)
-albedo     <- read.table("albedo.out", nrows = nRows, header = T)
-snowTemp   <- read.table("snowTemp.out", nrows = nRows, header = T)
-surfTemp   <- read.table("surfTemp.out", nrows = nRows, header = T)
-liquFrac   <- read.table("liquFrac.out", nrows = nRows, header = T)
-fluxPrec   <- read.table("fluxPrec.out", nrows = nRows, header = T)
-fluxSubl   <- read.table("fluxSubl.out", nrows = nRows, header = T)
-fluxFlow   <- read.table("fluxFlow.out", nrows = nRows, header = T)
-fluxNetS   <- read.table("fluxNetS.out", nrows = nRows, header = T)
-fluxNetL   <- read.table("fluxNetL.out", nrows = nRows, header = T)
-fluxSoil   <- read.table("fluxSoil.out", nrows = nRows, header = T)
-fluxSens   <- read.table("fluxSens.out", nrows = nRows, header = T)
-stoiPrec   <- read.table("stoiPrec.out", nrows = nRows, header = T)
-stoiSubl   <- read.table("stoiSubl.out", nrows = nRows, header = T)
-stoiFlow   <- read.table("stoiFlow.out", nrows = nRows, header = T)
-rateAlbe   <- read.table("rateAlbe.out", nrows = nRows, header = T)
+precip     <- read.table("precip.out"   , nrows = nRows, header = T)
+sec        <- read.table("sec.out"      , nrows = nRows, header = T)
+swe        <- read.table("swe.out"      , nrows = nRows, header = T)
+albedo     <- read.table("albedo.out"   , nrows = nRows, header = T)
+snowCover  <- read.table("snowCover.out", nrows = nRows, header = T)
+snowTemp   <- read.table("snowTemp.out" , nrows = nRows, header = T)
+surfTemp   <- read.table("surfTemp.out" , nrows = nRows, header = T)
+liquFrac   <- read.table("liquFrac.out" , nrows = nRows, header = T)
+fluxPrec   <- read.table("fluxPrec.out" , nrows = nRows, header = T)
+fluxSubl   <- read.table("fluxSubl.out" , nrows = nRows, header = T)
+fluxFlow   <- read.table("fluxFlow.out" , nrows = nRows, header = T)
+fluxNetS   <- read.table("fluxNetS.out" , nrows = nRows, header = T)
+fluxNetL   <- read.table("fluxNetL.out" , nrows = nRows, header = T)
+fluxSoil   <- read.table("fluxSoil.out" , nrows = nRows, header = T)
+fluxSens   <- read.table("fluxSens.out" , nrows = nRows, header = T)
+stoiPrec   <- read.table("stoiPrec.out" , nrows = nRows, header = T)
+stoiSubl   <- read.table("stoiSubl.out" , nrows = nRows, header = T)
+stoiFlow   <- read.table("stoiFlow.out" , nrows = nRows, header = T)
+rateAlbe   <- read.table("rateAlbe.out" , nrows = nRows, header = T)
 
 
 pdf("output_snow.pdf", width=10, height=8)
@@ -35,6 +36,8 @@ plot(sec[,], type="l", main= "Snow Energy Content", ylab = "SEC [kJ/m2]", xlab="
 plot(swe[,], type="l", main= "Snow Water Equivalent", ylab = "SWE [m]", xlab="Day")
 
 plot(precip[,], type="l", main= "Precipitatin modified snow accumulation and melt", ylab = "Precipitation/Snowmelt [mm]", xlab="Day")
+
+plot(snowCover[,], type="l", main= "Snow Cover", ylab = "Snow Cover [-]", xlab="Day")
 
 plot(albedo[,], type="l", main= "Snow Albedo", ylab = "Albedo [-]", xlab="Day")
 

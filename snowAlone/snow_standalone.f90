@@ -15,6 +15,7 @@ program snow_standalone
     REAL, ALLOCATABLE      ::     snowEnergyCont(:)       !Snow energy content (kJ/m2)
     REAL, ALLOCATABLE      ::     snowWaterEquiv(:)       !Snow water equivalent (m)
     REAL, ALLOCATABLE      ::     albedo(:)               !Albedo (-)
+    REAL, ALLOCATABLE      ::     snowCover(:)            !Snow cover (-)
 
     REAL, ALLOCATABLE      ::     snowTemp(:)             !Mean temperatur of the snow pack [°C]
     REAL, ALLOCATABLE      ::     surfTemp(:)             !Snow surface temperature [°C]
@@ -45,6 +46,7 @@ program snow_standalone
     ALLOCATE(snowEnergyCont(Nrow))
     ALLOCATE(snowWaterEquiv(Nrow))
     ALLOCATE(albedo(Nrow))
+    ALLOCATE(snowCover(Nrow))
 
     ALLOCATE(snowTemp(Nrow))
     ALLOCATE(surfTemp(Nrow))
@@ -92,7 +94,7 @@ program snow_standalone
 
        CALL snow_compute(precip(i), temp(i), radia(i), airpress(i), relhumi(i), windspeed(i), cloudcover(i), &
                          snowEnergyCont(max(1,i-1)), snowWaterEquiv(max(1,i-1)), albedo(max(1,i-1)),&
-                         snowEnergyCont(i), snowWaterEquiv(i), albedo(i), snowTemp(max(1,i-1)), &
+                         snowEnergyCont(i), snowWaterEquiv(i), albedo(i), snowCover(i), snowTemp(max(1,i-1)), &
                          surfTemp(i), liquFrac(i), fluxPrec(i), fluxSubl(i), fluxFlow(i), &
                          fluxNetS(i), fluxNetL(i), fluxSoil(i), fluxSens(i), stoiPrec(i), &
                          stoiSubl(i), stoiFlow(i), rateAlbe(i))
@@ -131,6 +133,14 @@ program snow_standalone
     WRITE(13,*) 'albedo'
     DO i= 1, Nrow
     WRITE(13,fmt=100) albedo(i)
+    END DO
+    CLOSE(13)
+
+    !Export snow cover
+    OPEN(13,file='U:\GitHub\SnowAlone\output\snowCover.out', status='replace')
+    WRITE(13,*) 'snowCover'
+    DO i= 1, Nrow
+    WRITE(13,fmt=100) snowCover(i)
     END DO
     CLOSE(13)
 
