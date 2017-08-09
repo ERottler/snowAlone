@@ -53,8 +53,6 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
        snowWaterEquiv_new     =     snowWaterEquiv   +   snowResults(2) * precipSeconds
        albedo_new             =     albedo           +   snowResults(3) * precipSeconds
 
-
-
     !Correct if SWE would become < 0
     if(snowResults(2) < 0 .and. ABS(snowResults(2))*precipSeconds > snowWaterEquiv)   then
        snowWaterEquiv_new = 0.
@@ -87,6 +85,8 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
 
        end if
 
+       !Calculation snow cover
+       snowCover  = snowDepl(snowWaterEquiv_new)
 
        precipSumMM = min((snowResults(4) * 1000 * precipSeconds), (snowWaterEquiv*1000 + precipSumMM)) ! mm/referenceInterval
        !in case rain on snow: rain is swe melted + precipitation current time step
@@ -107,7 +107,7 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
       stoi_f_subl     =     snowResults(15)
       stoi_f_flow     =     snowResults(16)
       rate_G_alb      =     snowResults(17)
-      snowCover       =     snowResults(18)
+      !snowCover       =     snowResults(18)
 
     contains
 
@@ -653,7 +653,7 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
         !Other rates
         rate_G_alb = G_alb(albedo, precipSumMM, precipSeconds, tempAir, tempAir_crit, albedoMin, &
                           albedoMax, agingRate_tAirPos, agingRate_tAirNeg, snowWaterEquiv)
-        snowCover  = snowDepl(snowWaterEquiv)
+        !snowCover  = snowDepl(snowWaterEquiv)
 
         !Computation of derivatives
         ddt_sec = 0.001 * (R_netS(snowWaterEquiv, shortRad, albedo) + &
@@ -673,7 +673,7 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
         !Collect output
         snowModelRes = (/ ddt_sec,     ddt_swe,     ddt_alb,     flux_M_flow, flux_M_subl, flux_M_prec, &
                           TEMP_MEAN,   TEMP_SURF,   LIQU_FRAC,   flux_R_netS, flux_R_netL, flux_R_soil, &
-                          flux_R_sens, stoi_f_prec, stoi_f_subl, stoi_f_flow, rate_G_alb,  snowCover/)
+                          flux_R_sens, stoi_f_prec, stoi_f_subl, stoi_f_flow, rate_G_alb/)
 
      end function f_snowModel
 
