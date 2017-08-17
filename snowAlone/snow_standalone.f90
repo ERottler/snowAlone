@@ -19,6 +19,7 @@ program snow_standalone
     REAL, ALLOCATABLE      ::     snowCover(:)            !Snow cover (-)
     REAL, ALLOCATABLE      ::     precipMod(:)            !Precipitation signal modified by snow module [mm]
     REAL, ALLOCATABLE      ::     cloudFrac(:)            !Cloud fraction [-]
+    REAL, ALLOCATABLE      ::     precipBal(:)            !Precipitation input collected TC wise for balance check
 
     REAL, ALLOCATABLE      ::     snowTemp(:)             !Mean temperatur of the snow pack [°C]
     REAL, ALLOCATABLE      ::     surfTemp(:)             !Snow surface temperature [°C]
@@ -53,6 +54,7 @@ program snow_standalone
     ALLOCATE(snowCover(Nrow))
     ALLOCATE(precipMod(Nrow))
     ALLOCATE(cloudFrac(Nrow))
+    ALLOCATE(precipBal(Nrow))
 
     ALLOCATE(snowTemp(Nrow))
     ALLOCATE(surfTemp(Nrow))
@@ -99,23 +101,16 @@ program snow_standalone
                          snowEnergyCont(i), snowWaterEquiv(i), albedo(i), snowCover(i), snowTemp(max(1,i-1)), &
                          surfTemp(i), liquFrac(i), fluxPrec(i), fluxSubl(i), fluxFlow(i), &
                          fluxNetS(i), fluxNetL(i), fluxSoil(i), fluxSens(i), stoiPrec(i), &
-                         stoiSubl(i), stoiFlow(i), rateAlbe(i), precipMod(i), cloudFrac(i))
+                         stoiSubl(i), stoiFlow(i), rateAlbe(i), precipMod(i), cloudFrac(i), precipBal(i))
 
        !Correction via balance
        !Precipitation in must equal precipitation out + sublimation flux + snow water equivalent
        !probably truncation causes slight deviations
-       if(SUM(precip(1:i))  /=  SUM(precipMod(1:i)) + SUM(fluxSubl(1:i))*1000*precipSeconds + snowWaterEquiv(i)*1000) then
-          snowWaterEquiv(i) = SUM(precip(1:i))/1000 - (SUM(precipMod(1:i))/1000 + SUM(fluxSubl(1:i))*precipSeconds)
+       if(SUM(precipBal(1:i))  /=  SUM(precipMod(1:i)) + SUM(fluxSubl(1:i))*1000*precipSeconds + snowWaterEquiv(i)*1000) then
+         snowWaterEquiv(i) = SUM(precipBal(1:i))/1000 - (SUM(precipMod(1:i))/1000 + SUM(fluxSubl(1:i))*precipSeconds)
        end if
 
     END DO
-
-    print*, 'Sum precip(1:499)', SUM(precip(1:499))
-    print*, 'Sum precipMod', SUM(precipMod)
-    print*, 'SUM(fluxSubl(1:499))', SUM(fluxSubl(1:499))*1000*precipSeconds
-    print*, 'SUM(fluxFlow(1:499))', SUM(fluxFlow(1:499))*1000*precipSeconds
-    print*, 'Sum precipMod + SUM(fluxSubl(1:499))', SUM(precipMod) +SUM(fluxSubl(1:499))*1000*precipSeconds
-
 
     !Export modified Precipitation
     OPEN(10,file='U:\GitHub\SnowAlone\output\precipMod.out', status='replace')
