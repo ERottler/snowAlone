@@ -15,14 +15,17 @@ program snow_standalone
     REAL, ALLOCATABLE      ::     snowEnergyCont(:)       !Snow energy content (kJ/m2)
     REAL, ALLOCATABLE      ::     snowWaterEquiv(:)       !Snow water equivalent (m)
     REAL, ALLOCATABLE      ::     albedo(:)               !Albedo (-)
+
     REAL, ALLOCATABLE      ::     snowCover(:)            !Snow cover (-)
+    REAL, ALLOCATABLE      ::     precipMod(:)            !Precipitation signal modified by snow module [mm]
+    REAL, ALLOCATABLE      ::     cloudFrac(:)            !Cloud fraction [-]
 
     REAL, ALLOCATABLE      ::     snowTemp(:)             !Mean temperatur of the snow pack [°C]
     REAL, ALLOCATABLE      ::     surfTemp(:)             !Snow surface temperature [°C]
     REAL, ALLOCATABLE      ::     liquFrac(:)             !Fraction of liquid water (mass water / (mass water + mass ice)); Unit: Dimensionless, range 0...1
-    REAL, ALLOCATABLE      ::     fluxPrec(:)             !Precipitation mass flux [m/s]
-    REAL, ALLOCATABLE      ::     fluxSubl(:)             !Sublimation mass flux [m/s]
-    REAL, ALLOCATABLE      ::     fluxFlow(:)             !Meltwater flux [m/s]
+    REAL, ALLOCATABLE      ::     fluxPrec(:)             !Precipitation mass flux [mm/s]
+    REAL, ALLOCATABLE      ::     fluxSubl(:)             !Sublimation mass flux [mm/s]
+    REAL, ALLOCATABLE      ::     fluxFlow(:)             !Meltwater flux [mm/s]
     REAL, ALLOCATABLE      ::     fluxNetS(:)             !Short-wave radiation balance [W/m²]
     REAL, ALLOCATABLE      ::     fluxNetL(:)             !Long-wave radiation balance [W/m²]
     REAL, ALLOCATABLE      ::     fluxSoil(:)             !Soil heat flux [W/m²]
@@ -46,7 +49,10 @@ program snow_standalone
     ALLOCATE(snowEnergyCont(Nrow))
     ALLOCATE(snowWaterEquiv(Nrow))
     ALLOCATE(albedo(Nrow))
+
     ALLOCATE(snowCover(Nrow))
+    ALLOCATE(precipMod(Nrow))
+    ALLOCATE(cloudFrac(Nrow))
 
     ALLOCATE(snowTemp(Nrow))
     ALLOCATE(surfTemp(Nrow))
@@ -78,36 +84,45 @@ program snow_standalone
 
     CLOSE(11)
 
-
     !Computations
     DO i=1,500-1
 
-    print*, i
+       print*, i
 
-    if(precip(i) > 0.) then
-    print*, 'Rain'
-    end if
+     if(precip(i) > 0.)then
+      print*, 'Rain'
+     endif
 
-    if(temp(i) > 5.) then
-    print*, 'Temp > 5'
-    end if
 
        CALL snow_compute(precip(i), temp(i), radia(i), airpress(i), relhumi(i), windspeed(i), cloudcover(i), &
                          snowEnergyCont(max(1,i-1)), snowWaterEquiv(max(1,i-1)), albedo(max(1,i-1)),&
                          snowEnergyCont(i), snowWaterEquiv(i), albedo(i), snowCover(i), snowTemp(max(1,i-1)), &
                          surfTemp(i), liquFrac(i), fluxPrec(i), fluxSubl(i), fluxFlow(i), &
                          fluxNetS(i), fluxNetL(i), fluxSoil(i), fluxSens(i), stoiPrec(i), &
-                         stoiSubl(i), stoiFlow(i), rateAlbe(i))
+                         stoiSubl(i), stoiFlow(i), rateAlbe(i), precipMod(i), cloudFrac(i))
+
+       !Correction via balance
+       !Precipitation in must equal precipitation out + sublimation flux + snow water equivalent
+       !probably truncation causes slight deviations
+       if(SUM(precip(1:i))  /=  SUM(precipMod(1:i)) + SUM(fluxSubl(1:i))*1000*precipSeconds + snowWaterEquiv(i)*1000) then
+          snowWaterEquiv(i) = SUM(precip(1:i))/1000 - (SUM(precipMod(1:i))/1000 + SUM(fluxSubl(1:i))*precipSeconds)
+       end if
 
     END DO
 
-    !print*, 'Is allocated?', allocated(precip)
+    print*, 'Sum precip(1:499)', SUM(precip(1:499))
+    print*, 'Sum precipMod', SUM(precipMod)
+    print*, 'SUM(fluxSubl(1:499))', SUM(fluxSubl(1:499))*1000*precipSeconds
+    print*, 'SUM(fluxFlow(1:499))', SUM(fluxFlow(1:499))*1000*precipSeconds
+    print*, 'Sum precipMod + SUM(fluxSubl(1:499))', SUM(precipMod) +SUM(fluxSubl(1:499))*1000*precipSeconds
+
 
     !Export modified Precipitation
-    OPEN(10,file='U:\GitHub\SnowAlone\output\precip.out', status='replace')
-    WRITE(10,*) 'precip'
+    OPEN(10,file='U:\GitHub\SnowAlone\output\precipMod.out', status='replace')
+    WRITE(10,*) 'precipMod'
     DO i= 1, Nrow
-    WRITE(10,fmt=100) precip(i)
+    WRITE(10,fmt=100) precipMod(i)
+    100 FORMAT(E18.12)
     END DO
     CLOSE(10)
 
@@ -116,7 +131,6 @@ program snow_standalone
     WRITE(11,*) 'sec'
     DO i= 1, Nrow
     WRITE(11,fmt=100) snowEnergyCont(i)
-    100 FORMAT(E12.5)
     END DO
     CLOSE(11)
 
@@ -253,6 +267,14 @@ program snow_standalone
     WRITE(27,*) 'rateAlbe'
     DO i= 1, Nrow
     WRITE(27,fmt=100) rateAlbe(i)
+    END DO
+    CLOSE(27)
+
+    !Export cloud fraction
+    OPEN(27,file='U:\GitHub\SnowAlone\output\cloudFrac.out', status='replace')
+    WRITE(27,*) 'cloudFrac'
+    DO i= 1, Nrow
+    WRITE(27,fmt=100) cloudFrac(i)
     END DO
     CLOSE(27)
 
