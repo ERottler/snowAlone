@@ -80,7 +80,13 @@ def <- c(0,diff(swe[,]))*1000
 sum(def)
 plot(def,type = "l")
 
+fluxPrec[199:205,]*1000*24*3600
+sec[199:205,]
+fluxFlow[199:205,]*1000*24*3600
+swe[199:205,]
+precip[199:205,]
 
+fluxFlow[199:205,]*1000*24*3600
 
 plot(def-tes,type = "l")
 
@@ -89,20 +95,13 @@ plot(tes,type = "l")
 plot(def,type = "l")
 sum(precip)
 
-sum(fluxPrec[,]*24)  
 sum(precip)
-sum(fluxSubl[,]*24)
-
-sum(fluxFlow[,]*24)
-swe[nrow(swe),]*1000
-
-sum(precip)
+sum(fluxSubl[,]*1000*24*3600)
+sum(fluxPrec[,]*1000*24*3600)
 
 swe[nrow(swe),]
-
-max(fluxPrec)*24
-max(fluxFlow)*24
-max(fluxSubl)*24
+precip[which(precip < 0.),]
+swe[which(swe < 0.),]
 
 # plot(swe[100:180,], type="l", main= "Snow Water Equivalent", ylab = "SWE [m]", xlab="Day")
 # abline(h=0.05)

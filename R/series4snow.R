@@ -16,13 +16,13 @@ datevec <- seq(start.date, end.date, by="day")
 
 #Rainfall [mm]
 #rain=rep(c(rep(0,9),100),ceiling(length(datevec)/10))
-rain=rep(c(rep(0,99),400),ceiling(length(datevec)/10))
+rain=rep(c(rep(0,99),200),ceiling(length(datevec)/10))
 rain=rain[1:length(datevec)]
 
 #Temperature [°C]
 #temp=round(rep(c(seq(20,-10,length.out=50),seq(-10,20,length.out=50)),ceiling(length(datevec)/100)),digits=1) # in °C
-#temp=round(rep(c(seq(-10,4,length.out=50),seq(4,-10,length.out=50)),ceiling(length(datevec)/100)),digits=1) # in °C
-temp=c(rep(-10, 190), rep(2,length(datevec)))
+#temp=round(rep(c(seq(-10,5,length.out=50),seq(5,-10,length.out=50)),ceiling(length(datevec)/100)),digits=1) # in °C
+temp=c(rep(-5, 199), rep(3,length(datevec)))
 #temp=rep(-4,length(datevec))
 temp=temp[1:length(datevec)]
 

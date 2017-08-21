@@ -91,11 +91,6 @@ program snow_standalone
 
        print*, i
 
-     if(precip(i) > 0.)then
-      print*, 'Rain'
-     endif
-
-
        CALL snow_compute(precip(i), temp(i), radia(i), airpress(i), relhumi(i), windspeed(i), cloudcover(i), &
                          snowEnergyCont(max(1,i-1)), snowWaterEquiv(max(1,i-1)), albedo(max(1,i-1)),&
                          snowEnergyCont(i), snowWaterEquiv(i), albedo(i), snowCover(i), snowTemp(max(1,i-1)), &
@@ -103,10 +98,12 @@ program snow_standalone
                          fluxNetS(i), fluxNetL(i), fluxSoil(i), fluxSens(i), stoiPrec(i), &
                          stoiSubl(i), stoiFlow(i), rateAlbe(i), precipMod(i), cloudFrac(i), precipBal(i))
 
+
        !Correction via balance
        !Precipitation in must equal precipitation out + sublimation flux + snow water equivalent
        !probably truncation causes slight deviations
-       if(SUM(precipBal(1:i))  /=  SUM(precipMod(1:i)) + SUM(fluxSubl(1:i))*1000*precipSeconds + snowWaterEquiv(i)*1000) then
+       if(snowWaterEquiv(i) > 0. .AND. SUM(precipBal(1:i))  /=  SUM(precipMod(1:i)) + SUM(fluxSubl(1:i))*1000*precipSeconds + &
+                                                                snowWaterEquiv(i)*1000) then
          snowWaterEquiv(i) = SUM(precipBal(1:i))/1000 - (SUM(precipMod(1:i))/1000 + SUM(fluxSubl(1:i))*precipSeconds)
        end if
 
