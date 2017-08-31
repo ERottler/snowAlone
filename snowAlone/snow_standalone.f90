@@ -36,7 +36,7 @@ program snow_standalone
     REAL, ALLOCATABLE      ::     stoiFlow(:)             !Conversion of meltwater loss mass flux (m/s) to energy flux (kJ/m2/s); Unit of result: kJ/m3
     REAL, ALLOCATABLE      ::     rateAlbe(:)             !Change rate of albedo [1/s]
 
-    INTEGER                ::     Nrow=7671               !Number of rows to read from input data
+    INTEGER                ::     Nrow=731                !Number of rows to read from input data
     INTEGER                ::     i                       !counter for do loop
 
     ALLOCATE(precip(Nrow))
@@ -87,7 +87,7 @@ program snow_standalone
     CLOSE(11)
 
     !Computations
-    DO i=1,500-1
+    DO i= 1, Nrow
 
        print*, i
 
@@ -99,12 +99,17 @@ program snow_standalone
                          stoiSubl(i), stoiFlow(i), rateAlbe(i), precipMod(i), cloudFrac(i), precipBal(i))
 
 
-       !Correction via balance
+       !Correction via mass balance
        !Precipitation in must equal precipitation out + sublimation flux + snow water equivalent
        !probably truncation causes slight deviations
-       if(snowWaterEquiv(i) > 0. .AND. SUM(precipBal(1:i))  /=  SUM(precipMod(1:i)) + SUM(fluxSubl(1:i))*1000*precipSeconds + &
-                                                                snowWaterEquiv(i)*1000) then
-         snowWaterEquiv(i) = SUM(precipBal(1:i))/1000 - (SUM(precipMod(1:i))/1000 + SUM(fluxSubl(1:i))*precipSeconds)
+       if(snowWaterEquiv(i) > 0. .AND. &
+          SUM(precipBal(1:i))  /=  &
+          SUM(precipMod(1:i)) + &
+          SUM(fluxSubl(1:i))*1000*precipSeconds + &
+          snowWaterEquiv(i)*1000) then
+
+          snowWaterEquiv(i) = SUM(precipBal(1:i))/1000. - (SUM(precipMod(1:i))/1000. + SUM(fluxSubl(1:i))*precipSeconds)
+
        end if
 
     END DO
@@ -139,14 +144,6 @@ program snow_standalone
     WRITE(13,*) 'albedo'
     DO i= 1, Nrow
     WRITE(13,fmt=100) albedo(i)
-    END DO
-    CLOSE(13)
-
-    !Export snow cover
-    OPEN(13,file='U:\GitHub\SnowAlone\output\snowCover.out', status='replace')
-    WRITE(13,*) 'snowCover'
-    DO i= 1, Nrow
-    WRITE(13,fmt=100) snowCover(i)
     END DO
     CLOSE(13)
 
@@ -263,13 +260,23 @@ program snow_standalone
     CLOSE(27)
 
     !Export cloud fraction
-    OPEN(27,file='U:\GitHub\SnowAlone\output\cloudFrac.out', status='replace')
-    WRITE(27,*) 'cloudFrac'
+    OPEN(28,file='U:\GitHub\SnowAlone\output\cloudFrac.out', status='replace')
+    WRITE(28,*) 'cloudFrac'
     DO i= 1, Nrow
-    WRITE(27,fmt=100) cloudFrac(i)
+    WRITE(28,fmt=100) cloudFrac(i)
     END DO
-    CLOSE(27)
+    CLOSE(28)
+
+    !Export snow cover
+    OPEN(29,file='U:\GitHub\SnowAlone\output\snowCover.out', status='replace')
+    WRITE(29,*) 'snowCover'
+    DO i= 1, Nrow
+    WRITE(29,fmt=100) snowCover(i)
+    END DO
+    CLOSE(29)
+
 
     PRINT*, 'Run successfully. Check output.'
+
 
 end program snow_standalone

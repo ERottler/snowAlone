@@ -1,29 +1,27 @@
 ###
 
-#Synthetic input time series for snow model
+#Synthetic input time series for snowAlone
 
 ###
 
-setwd("U:/GitHub/SnowAlone/")
+
+setwd("U:/GitHub/SnowAlone/input") #path to folder containing model input
 
 
-### Creat data ####
+### Creat data
 
 #Creat date vector
 start.date <- strptime("2000/01/01","%Y/%m/%d")  
-end.date <- strptime("2020/12/31","%Y/%m/%d")      
-datevec <- seq(start.date, end.date, by="day")
+end.date   <- strptime("2001/12/31","%Y/%m/%d")      
+datevec    <- seq(start.date, end.date, by="day")
 
 #Rainfall [mm]
-#rain=rep(c(rep(0,9),100),ceiling(length(datevec)/10))
 rain=rep(c(rep(0,99),200),ceiling(length(datevec)/10))
 rain=rain[1:length(datevec)]
 
 #Temperature [°C]
 #temp=round(rep(c(seq(20,-10,length.out=50),seq(-10,20,length.out=50)),ceiling(length(datevec)/100)),digits=1) # in °C
-#temp=round(rep(c(seq(-10,5,length.out=50),seq(5,-10,length.out=50)),ceiling(length(datevec)/100)),digits=1) # in °C
-temp=c(rep(-5, 199), rep(3,length(datevec)))
-#temp=rep(-4,length(datevec))
+temp=round(rep(c(seq(-10,5,length.out=50),seq(5,-10,length.out=50)),ceiling(length(datevec)/100)),digits=1) # in °C
 temp=temp[1:length(datevec)]
 
 #Raidation [W/m2]
@@ -35,46 +33,45 @@ humi=rep(70,length(datevec))
 #Wind [m/s]
 wind=rep(1,length(datevec))
 
-#Could Coverage [-] (0-1)
+#Could Coverage [-]
 cloud=rep(0.5,length(datevec))
-#cloud=rep(NA, length(datevec)) # (-) 0 - 1
-#for(i in 1:length(datevec)){
-#if(rain[i] > 1){cloud[i] <- 1}  #if rain, then clouds (cloud=1)
-#if(rain[i] < 1){cloud[i] <- 0}  #no rain, no clouds (cloud=0)
-#}
 
 #Air Pressure [hPa]
 pressAir = rep(1000, length(datevec))
 
 
-### Export table ####
+
+
+
+### Export table
 
 fname="input_snow"
 output = cbind(temp, rain, radi, humi, pressAir, wind, cloud)
-write.table(file = paste0(getwd(),"/input/input_syn.dat"), x=output, na = "-9999", sep="\t", col.names=FALSE, row.names = FALSE, quote = FALSE)
+write.table(file = paste0(getwd(),"/input_syn.dat"), x=output, na = "-9999", sep="\t", col.names=FALSE, row.names = FALSE, quote = FALSE)
 
 
-### Visualize input ####
 
-input = read.table(paste0(getwd(),"/input/input_syn.dat"))
-input <- input[1:499,]
+
+### Visualize input
+
+input = read.table(paste0(getwd(),"/input_syn.dat"))
 colnames(input) <- c("temp", "rain", "radi", "humi", "press", "wind", "cloud")
 
 
-pdf(paste0(getwd(),"/input/input_syn.pdf"), width=10, height=8)
+pdf(paste0(getwd(),"/input_syn.pdf"), width=10, height=8)
 
-plot(input$temp, type="l", main = "Air Temperature", ylab="Temperature [°C]", xlab="Day")
+plot(input$temp,  type="l", main = "Air Temperature", ylab="Temperature [°C]", xlab="Day")
 
-plot(input$rain, type="l", main = "Precipitation", ylab="Precipitation [mm/d]", xlab="Day")
+plot(input$rain,  type="l", main = "Precipitation", ylab="Precipitation [mm/d]", xlab="Day")
 
-plot(input$radi, type="l", main = "Shortwave radiation", ylab="Radiation [W/(m2*d)]", xlab="Day")
+plot(input$radi,  type="l", main = "Shortwave radiation", ylab="Radiation [W/(m2*d)]", xlab="Day")
 
-plot(input$humi, type="l", main = "Relative humidity", ylab="Humidity [%]", xlab="Day")
+plot(input$humi,  type="l", main = "Relative humidity", ylab="Humidity [%]", xlab="Day")
 
 plot(input$press, type="l", main = "Air pressure", ylab="Pressure [hPa]", xlab="Day")
 
-plot(input$wind, type="l", main = "Wind speed", ylab="Wind speed [m/s]", xlab="Day")
+plot(input$wind,  type="l", main = "Wind speed", ylab="Wind speed [m/s]", xlab="Day")
 
-plot(input$cloud, type="l", main = "Cloudiness (from 0 to1)", ylab="Cloudiness [-]", xlab="Day")
+plot(input$cloud, type="l", main = "Cloud cover", ylab="Cloud cover [-]", xlab="Day")
 
 dev.off()
