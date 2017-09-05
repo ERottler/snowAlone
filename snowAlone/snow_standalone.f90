@@ -1,6 +1,6 @@
 program snow_standalone
 
-    use snow_params
+    use snow_h
 
     implicit none
 
@@ -79,12 +79,15 @@ program snow_standalone
 
     !Read meteorological input
     OPEN(11, file='U:\GitHub\SnowAlone\input\input_syn.dat', status= 'old')
-
-    DO i = 1, Nrow
-       READ(11,*) temp(i), precip(i), radia(i), relhumi(i), airpress(i), windspeed(i), cloudcover(i)
-    END DO
-
+       DO i= 1,Nrow
+          READ(11,*) temp(i), precip(i), radia(i), relhumi(i), airpress(i), windspeed(i), cloudcover(i)
+       END DO
     CLOSE(11)
+
+    !Read parameter, if file exists. Else use default values
+    CALL read_snow_params(precipSeconds, a0, a1, kSatSnow, densDrySnow, specCapRet, emissivitySnowMin, emissivitySnowMax, &
+                          tempAir_crit, albedoMin, albedoMax, agingRate_tAirPos, agingRate_tAirNeg, soilDepth, soilDens,  &
+                          soilSpecHeat, weightAirTemp)
 
     !Computations
     DO i= 1, Nrow
@@ -100,7 +103,7 @@ program snow_standalone
 
 
        !Correction via mass balance
-       !Precipitation in must equal precipitation out + sublimation flux + snow water equivalent
+       !Precipitation input must equal precipitation out + sublimation flux + snow water equivalent
        !probably truncation causes slight deviations
        if(snowWaterEquiv(i) > 0. .AND. &
           SUM(precipBal(1:i))  /=  &

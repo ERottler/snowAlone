@@ -21,7 +21,7 @@ rain=rain[1:length(datevec)]
 
 #Temperature [°C]
 #temp=round(rep(c(seq(20,-10,length.out=50),seq(-10,20,length.out=50)),ceiling(length(datevec)/100)),digits=1) # in °C
-temp=round(rep(c(seq(-10,5,length.out=50),seq(5,-10,length.out=50)),ceiling(length(datevec)/100)),digits=1) # in °C
+temp=round(rep(c(seq(-10,2,length.out=50),seq(2,-10,length.out=50)),ceiling(length(datevec)/100)),digits=1) # in °C
 temp=temp[1:length(datevec)]
 
 #Raidation [W/m2]

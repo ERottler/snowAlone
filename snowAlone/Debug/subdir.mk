@@ -4,13 +4,15 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 F90_SRCS += \
+../read_snow_params.f90 \
 ../snow_compute.f90 \
-../snow_params.f90 \
+../snow_h.f90 \
 ../snow_standalone.f90 
 
 OBJS += \
+./read_snow_params.o \
 ./snow_compute.o \
-./snow_params.o \
+./snow_h.o \
 ./snow_standalone.o 
 
 
@@ -22,10 +24,12 @@ OBJS += \
 	@echo 'Finished building: $<'
 	@echo ' '
 
-snow_compute.o: ../snow_compute.f90 snow_params.o
+read_snow_params.o: ../read_snow_params.f90
 
-snow_params.o: ../snow_params.f90
+snow_compute.o: ../snow_compute.f90 snow_h.o
 
-snow_standalone.o: ../snow_standalone.f90 snow_params.o
+snow_h.o: ../snow_h.f90
+
+snow_standalone.o: ../snow_standalone.f90 snow_h.o
 
 
