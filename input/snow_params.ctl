@@ -14,4 +14,4 @@ agingRate_tAirNeg	0.000000462	#Aging rate for air temperatures < 0 (1/s)
 soilDepth		0.1		#Depth of interacting soil layer (m)
 soilDens		1300		#Density of soil (kg/m3)
 soilSpecHeat		2.18		#Spec. heat capacity of soil (kJ/kg/K)
-weightAirTemp		0.5		#Weighting param. for air temp. (-) in 0...1
+weightAirTemp		0.5		#Weighting param. for air temp. (-) in 0-1
