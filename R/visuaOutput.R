@@ -12,8 +12,8 @@ sec        <- read.table("sec.out"      , header = T)
 swe        <- read.table("swe.out"      , header = T)
 albedo     <- read.table("albedo.out"   , header = T)
 snowCover  <- read.table("snowCover.out", header = T)
-snowTemp   <- read.table("snowTemp.out" , header = T)
-surfTemp   <- read.table("surfTemp.out" , header = T)
+snowTemp   <- read.table("snowTemp.out" , header = T, na.strings = "-.999900000000E+04")
+surfTemp   <- read.table("surfTemp.out" , header = T, na.strings = "-.999900000000E+04")
 liquFrac   <- read.table("liquFrac.out" , header = T)
 fluxPrec   <- read.table("fluxPrec.out" , header = T)
 fluxSubl   <- read.table("fluxSubl.out" , header = T)
@@ -69,4 +69,16 @@ plot(stoiFlow[,],  type="l", main= "Convertion factor meltwaver loss to energy",
 plot(rateAlbe[,],  type="l", main= "Change rate of snow albedo", ylab = "Albedo [-]", xlab="Day")
 
 dev.off()
+
+#Balance check
+#sum(fluxPrec[,])*84600*1000
+#sum(precip[,]) + sum(fluxSubl[,])*84600*1000 + sum(swe[nrow(swe),]*1000)
+
+
+
+
+
+
+
+
 

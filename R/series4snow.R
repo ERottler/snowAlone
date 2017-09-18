@@ -17,11 +17,14 @@ datevec    <- seq(start.date, end.date, by="day")
 
 #Rainfall [mm]
 rain=rep(c(rep(0,99),200),ceiling(length(datevec)/10))
+#rain=c(rep(0,99),500,rep(0,length(datevec)))
 rain=rain[1:length(datevec)]
 
 #Temperature [°C]
 #temp=round(rep(c(seq(20,-10,length.out=50),seq(-10,20,length.out=50)),ceiling(length(datevec)/100)),digits=1) # in °C
-temp=round(rep(c(seq(-10,2,length.out=50),seq(2,-10,length.out=50)),ceiling(length(datevec)/100)),digits=1) # in °C
+temp=round(rep(c(seq(-5,5,length.out=50),seq(5,-5,length.out=50)),ceiling(length(datevec)/100)),digits=1) # in °C
+#temp=rep(0,length(datevec)) # in °C
+#temp=round(c(rep(-20,120),rep(20, length(datevec))))
 temp=temp[1:length(datevec)]
 
 #Raidation [W/m2]

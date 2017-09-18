@@ -102,18 +102,17 @@ program snow_standalone
                          stoiSubl(i), stoiFlow(i), rateAlbe(i), precipMod(i), cloudFrac(i), precipBal(i))
 
 
-       !Correction via mass balance
-       !Precipitation input must equal precipitation out + sublimation flux + snow water equivalent
-       !probably truncation causes slight deviations
-       if(snowWaterEquiv(i) > 0. .AND. &
-          SUM(precipBal(1:i))  /=  &
-          SUM(precipMod(1:i)) + &
-          SUM(fluxSubl(1:i))*1000*precipSeconds + &
-          snowWaterEquiv(i)*1000) then
-
-          snowWaterEquiv(i) = SUM(precipBal(1:i))/1000. - (SUM(precipMod(1:i))/1000. + SUM(fluxSubl(1:i))*precipSeconds)
-
-       end if
+!       !Correction via mass balance (no need: truncation issues suspected at first, but was just typing mistake)
+!       !Precipitation input must equal precipitation out + sublimation flux + snow water equivalent
+!       if(snowWaterEquiv(i) > 0. .AND. &
+!          SUM(precipBal(1:i))  /=  &
+!          SUM(precipMod(1:i)) + &
+!          SUM(fluxSubl(1:i))*1000*precipSeconds + &
+!          snowWaterEquiv(i)*1000) then
+!
+!          snowWaterEquiv(i) = SUM(precipBal(1:i))/1000. - (SUM(precipMod(1:i))/1000. + SUM(fluxSubl(1:i))*precipSeconds)
+!
+!       end if
 
     END DO
 
