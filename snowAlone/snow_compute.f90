@@ -3,15 +3,17 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
                         snowEnergyContent, snowWaterEquivalent, albedo, snowEnergyCont_new, snowWaterEquiv_new, albedo_new, &
                         snowCov, TEMP_MEAN, TEMP_SURF, LIQU_FRAC, flux_M_prec, flux_M_subl, flux_M_flow, flux_R_netS, &
                         flux_R_netL, flux_R_soil, flux_R_sens, stoi_f_prec, stoi_f_subl, stoi_f_flow, rate_G_alb, &
-                        precipModif, cloudFraction, precipBalan)
+                        precipModif, cloudFraction)
 
     use snow_h
 
     implicit none
 
     REAL, INTENT(IN)      ::      precipSumMM             !Precipitation sum (mm/referenceInterval)
-    REAL, INTENT(IN)      ::      tempAir                 !Air temperature (°C)
-    REAL, INTENT(IN)      ::      shortRad                !Incoming short wave radiation (W/m2)
+
+    REAL, INTENT(IN), DIMENSION(1:24)  ::  shortRad       !Incoming short wave radiation (W/m2)
+    REAL, INTENT(IN), DIMENSION(1:24)  ::  tempAir        !Air temperature (°C)
+
     REAL, INTENT(IN)      ::      pressAir                !Air pressure (hPa)
     REAL, INTENT(IN)      ::      relHumid                !Relative humidity (%)
     REAL, INTENT(IN)      ::      windSpeed               !Wind speed (m/s)
@@ -28,7 +30,6 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
     REAL, INTENT(OUT)     ::      snowCov                 !Snow cover (-)
     REAL, INTENT(OUT)     ::      precipModif             !Precipitation modified by snow module [mm] (collect for debugging purposes)
     REAL, INTENT(OUT)     ::      cloudFraction           !cloud fraction caclulated based on radiation [-] (collect for debugging purposes)
-    REAL, INTENT(OUT)     ::      precipBalan             !Precipitation input snow model for balance check; afte prepare_input()
 
     REAL, DIMENSION(1:17) ::      snowResults             !array to collect results of calculations
 
@@ -58,20 +59,20 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
        snowEnergyCont_new     =     snowEnergyContent
        snowWaterEquiv_new     =     snowWaterEquivalent
        albedo_new             =     albedo
-       flux_M_flow            =     0
-       flux_M_subl            =     0
-       flux_M_prec            =     0
-       TEMP_MEAN              =     0
-       TEMP_SURF              =     0
-       LIQU_FRAC              =     0
-       flux_R_netS            =     0
-       flux_R_netL            =     0
-       flux_R_soil            =     0
-       flux_R_sens            =     0
-       stoi_f_prec            =     0
-       stoi_f_subl            =     0
-       stoi_f_flow            =     0
-       rate_G_alb             =     0
+       flux_M_flow            =     0.
+       flux_M_subl            =     0.
+       flux_M_prec            =     0.
+       TEMP_MEAN              =     0.
+       TEMP_SURF              =     0.
+       LIQU_FRAC              =     0.
+       flux_R_netS            =     0.
+       flux_R_netL            =     0.
+       flux_R_soil            =     0.
+       flux_R_sens            =     0.
+       stoi_f_prec            =     0.
+       stoi_f_subl            =     0.
+       stoi_f_flow            =     0.
+       rate_G_alb             =     0.
 
        if(precipSeconds >= 84600.)then
           n = 24
@@ -81,7 +82,7 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
 
        DO i=1,n !Daily resolution data too coarse; causing instabilities in melting process
 
-          snowResults(1:17) = f_snowModel(precipSumMM/n, shortRad/n, tempAir, pressAir, relHumid, windSpeed, cloudCoverage, &
+          snowResults(1:17) = f_snowModel(precipSumMM/n, shortRad(i), tempAir(i), pressAir, relHumid, windSpeed, cloudCoverage, &
                                           precipSeconds/n, a0, a1, kSatSnow, densDrySnow, SpecCapRet, emissivitySnowMin, &
                                           emissivitySnowMax, tempAir_crit, albedoMin, albedoMax, agingRate_tAirPos, &
                                           agingRate_tAirNeg, soilDepth, soilDens, soilSpecHeat, weightAirTemp, &
@@ -126,10 +127,9 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
 
        snowCov        =  snowDepl(snowWaterEquiv_new)
        cloudFraction  =  cloudCoverage
-       precipBalan    =  precipSumMM
 
     else
-       snowResults(1:17) = f_snowModel(precipSumMM, shortRad, tempAir, pressAir, relHumid, windSpeed, cloudCoverage, &
+       snowResults(1:17) = f_snowModel(precipSumMM, sum(shortRad), tempAir(1), pressAir, relHumid, windSpeed, cloudCoverage, &
                                        precipSeconds, a0, a1, kSatSnow, densDrySnow, SpecCapRet, emissivitySnowMin, &
                                        emissivitySnowMax, tempAir_crit, albedoMin, albedoMax, agingRate_tAirPos, &
                                        agingRate_tAirNeg, soilDepth, soilDens, soilSpecHeat, weightAirTemp, &
@@ -156,7 +156,6 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
 
        snowCov                =     0.
        cloudFraction          =     cloudCoverage
-       precipBalan            =     0.
 
     end if
 
@@ -504,7 +503,7 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
         real :: snowWaterEquivalent
         real :: snowDepl
 
-        if(snowWaterEquivalent > 0.) then
+        if(snowWaterEquivalent > 0.05) then
            snowDepl = 1.
         else
            snowDepl = 0.
@@ -672,7 +671,7 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
         real :: ddt_sec
         real :: ddt_swe
         real :: ddt_alb
-        real, dimension(:), allocatable :: snowModelRes
+        real, dimension(1:17) :: snowModelRes
 
         !Derived variables
         TEMP_MEAN = snowTemp_mean(snowEnergyContent, snowWaterEquivalent, soilDepth, soilDens, soilSpecHeat)

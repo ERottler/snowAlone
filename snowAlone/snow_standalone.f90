@@ -87,7 +87,7 @@ program snow_standalone
     !Read parameter, if file exists. Else use default values
     CALL read_snow_params(precipSeconds, a0, a1, kSatSnow, densDrySnow, specCapRet, emissivitySnowMin, emissivitySnowMax, &
                           tempAir_crit, albedoMin, albedoMax, agingRate_tAirPos, agingRate_tAirNeg, soilDepth, soilDens,  &
-                          soilSpecHeat, weightAirTemp)
+                          soilSpecHeat, weightAirTemp, lat, lon, do_rad_corr, do_alt_corr, tempLaps, tempAmplitude, tempMaxOffset)
 
     !Computations
     DO i= 1, Nrow
@@ -101,18 +101,6 @@ program snow_standalone
                          fluxNetS(i), fluxNetL(i), fluxSoil(i), fluxSens(i), stoiPrec(i), &
                          stoiSubl(i), stoiFlow(i), rateAlbe(i), precipMod(i), cloudFrac(i), precipBal(i))
 
-
-!       !Correction via mass balance (no need: truncation issues suspected at first, but was just typing mistake)
-!       !Precipitation input must equal precipitation out + sublimation flux + snow water equivalent
-!       if(snowWaterEquiv(i) > 0. .AND. &
-!          SUM(precipBal(1:i))  /=  &
-!          SUM(precipMod(1:i)) + &
-!          SUM(fluxSubl(1:i))*1000*precipSeconds + &
-!          snowWaterEquiv(i)*1000) then
-!
-!          snowWaterEquiv(i) = SUM(precipBal(1:i))/1000. - (SUM(precipMod(1:i))/1000. + SUM(fluxSubl(1:i))*precipSeconds)
-!
-!       end if
 
     END DO
 

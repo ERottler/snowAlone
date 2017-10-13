@@ -1,6 +1,6 @@
 subroutine read_snow_params(precipSeconds, a0, a1, kSatSnow, densDrySnow, specCapRet, emissivitySnowMin, emissivitySnowMax, &
                             tempAir_crit, albedoMin, albedoMax, agingRate_tAirPos, agingRate_tAirNeg, soilDepth, soilDens,  &
-                            soilSpecHeat, weightAirTemp)
+                            soilSpecHeat, weightAirTemp, lat, lon, do_rad_corr, do_alt_corr, tempLaps, tempAmplitude, tempMaxOffset)
 
 
     implicit none
@@ -22,6 +22,13 @@ subroutine read_snow_params(precipSeconds, a0, a1, kSatSnow, densDrySnow, specCa
     REAL, INTENT(IN OUT)      ::      soilDens                !Density of soil (kg/m3)
     REAL, INTENT(IN OUT)      ::      soilSpecHeat            !Spec. heat capacity of soil (kJ/kg/K)
     REAL, INTENT(IN OUT)      ::      weightAirTemp           !Weighting param. for air temp. (-) in 0...1
+    REAL, INTENT(IN OUT)      ::      lat                     !Latitude of centre of study area
+    REAL, INTENT(IN OUT)      ::      lon                     !Longitude of centre of study area
+    LOGICAL, INTENT(IN OUT)   ::      do_rad_corr             !modification of radiation with aspect and slope
+    LOGICAL, INTENT(IN OUT)   ::      do_alt_corr             !modification of temperature with altitude of LU
+    REAL, INTENT(IN OUT)      ::      tempLaps                !Temperature lapse rate for modification depending on elevation of TC (°C/m)
+    REAL, INTENT(IN OUT)      ::      tempAmplitude           !Temperature amplitude to simulate daily cycle (°C])
+    REAL, INTENT(IN OUT)      ::      tempMaxOffset           !Offset of daily temperature maximum from 12:00 (h)
 
     INTEGER                   ::      istate                  !IOSTATE dummy
     CHARACTER (LEN=250)       ::      dummy                   !dummy to read parameter from file
@@ -72,6 +79,22 @@ subroutine read_snow_params(precipSeconds, a0, a1, kSatSnow, densDrySnow, specCa
                         READ(dummy,*) dummy2, soilSpecHeat
                     CASE ('weightAirTemp')
                         READ(dummy,*) dummy2, weightAirTemp
+                    CASE ('lat')
+                        READ(dummy,*) dummy2, lat
+                        !lat = lat *pi/180
+                    CASE ('lon')
+                        READ(dummy,*) dummy2, lon
+                        !lon = lon *pi/180
+                    CASE ('do_rad_corr')
+                        READ(dummy,*) dummy2, do_rad_corr
+                    CASE ('do_alt_corr')
+                        READ(dummy,*) dummy2, do_alt_corr
+                    CASE ('tempLaps')
+                        READ(dummy,*) dummy2, tempLaps
+                    CASE ('tempAmplitude')
+                        READ(dummy,*) dummy2, tempAmplitude
+                    CASE ('tempMaxOffset')
+                        READ(dummy,*) dummy2, tempMaxOffset
                 END SELECT
             end do
      CLOSE(12)
@@ -91,12 +114,18 @@ subroutine read_snow_params(precipSeconds, a0, a1, kSatSnow, densDrySnow, specCa
                 albedoMin=0.55                 !Minimum albedo used for old snow (-)
                 albedoMax=0.88                 !Maximum albedo used for new snow (-)
                 agingRate_tAirPos=0.00000111   !Aging rate for air temperatures > 0 (1/s)
-                agingRate_tAirNeg=0.000000462   !Aging rate for air temperatures < 0 (1/s)
+                agingRate_tAirNeg=0.000000462  !Aging rate for air temperatures < 0 (1/s)
                 soilDepth=0.1                  !Depth of interacting soil layer (m)
                 soilDens=1300.                 !Density of soil (kg/m3)
                 soilSpecHeat=2.18              !Spec. heat capacity of soil (kJ/kg/K)
                 weightAirTemp=0.5              !Weighting param. for air temp. (-) in 0...1
+                lat = 42.4                     !Latitude of centre of study area
+                lon = 0.55                     !Longitude of centre of study area
+                do_rad_corr = .TRUE.           !modification of radiation with aspect and slope
+                do_alt_corr = .TRUE.           !modification of temperature with altitude of LU
+                tempLaps = -0.006              !Temperature lapse rate for modification depending on elevation of TC (°C/m)
+                tempAmplitude = 8              !Temperature amplitude to simulate daily cycle (°C])
+                tempMaxOffset = 2              !Offset of daily temperature maximum from 12:00 (h)
         END IF
-
 
 end subroutine read_snow_params

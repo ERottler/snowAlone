@@ -27,6 +27,9 @@ stoiSubl   <- read.table("stoiSubl.out" , header = T)
 stoiFlow   <- read.table("stoiFlow.out" , header = T)
 rateAlbe   <- read.table("rateAlbe.out" , header = T)
 
+if(file.exists("output_snow.pdf")){
+file.rename(from = "output_snow.pdf", to= "output_snow_prev.pdf")
+  }
 
 pdf("output_snow.pdf", width=10, height=8)
 
