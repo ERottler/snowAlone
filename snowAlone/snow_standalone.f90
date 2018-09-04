@@ -36,7 +36,7 @@ program snow_standalone
     REAL, ALLOCATABLE      ::     stoiFlow(:)             !Conversion of meltwater loss mass flux (m/s) to energy flux (kJ/m2/s); Unit of result: kJ/m3
     REAL, ALLOCATABLE      ::     rateAlbe(:)             !Change rate of albedo [1/s]
 
-    INTEGER                ::     Nrow=731                !Number of rows to read from input data
+    INTEGER                ::     Nrow=300                !Number of rows to read from input data
     INTEGER                ::     i                       !counter for do loop
 
     ALLOCATE(precip(Nrow))

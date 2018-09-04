@@ -75,7 +75,7 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
        rate_G_alb             =     0.
 
        if(precipSeconds >= 84600.)then
-          n = 24
+          n = 5
        else
           n=1
        end if
@@ -683,16 +683,13 @@ subroutine snow_compute(precipSumMM, tempAir, shortRad, pressAir, relHumid, wind
         flux_M_subl = M_subl(TEMP_SURF, tempAir, pressAir, relHumid, windSpeed, a0, a1, snowWaterEquivalent)
         flux_M_flow = M_flow(LIQU_FRAC, kSatSnow, densDrySnow, specCapRet, snowWaterEquivalent)
 
-        !flux_M_flow = 0.0000000000003564321654651654651654651654651!0.1/1000./precipSeconds
-        flux_M_subl = 0.
-
         !if no snow cover present and precipitation liquid, no addition to swe
         if(snowWaterEquivalent <= 0.0 .and. tempAir > tempAir_crit) then
         flux_M_prec = 0.
         end if
 
         !Radiation fluxes
-        flux_R_netS = R_netS(shortRad, albedo, snowWaterEquivalent)
+        flux_R_netS = R_netS(snowWaterEquivalent, shortRad, albedo)
         flux_R_netL = R_netL(TEMP_SURF, emissivitySnowMin, emissivitySnowMax, tempAir, relHumid, &
                             cloudCoverage, albedo, albedoMin, albedoMax, snowWaterEquivalent)
         flux_R_soil = R_soil()
